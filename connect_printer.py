@@ -47,7 +47,6 @@ async def create_todo(device):
             text=get_east_asian_width_count(text=itext,max=32)
             for t in text:
                 await print_text(client=client, text=t, fontsize=20)
-                await feed(client=client, line=1)
             # 印字データ書き込みのあとにすぐDisconnectしてしまうとうまく動かないので少し待つ
         await feed(client=client, line=4)
         await asyncio.sleep(2)
@@ -103,7 +102,7 @@ async def print_text(client: BleakClient, text: str, fontsize: int = 24):
 
 def text_to_bitmap(text: str, fontsize: int) -> BitmapData:
     # 必要なビットマップサイズ
-    font = ImageFont.truetype('C:/Windows/Fonts/meiryob.ttc',fontsize)
+    font = ImageFont.truetype('C:/Windows/Fonts/YuGothL.ttc',fontsize)
     image_width = DOT_PER_LINE
     image_height = int(fontsize * 1.5)
 
