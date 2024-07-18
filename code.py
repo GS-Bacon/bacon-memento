@@ -105,8 +105,12 @@ def main():
         pycam.keys_debounce()
         if pycam.select.fell:
             print("select!")
+            image_counter=1
             while True:
+                
                 pycam.keys_debounce()
+                if pycam.select.fell:
+                    break
                 if pycam.card_detect.fell:
                     print("SD card removed")
                     pycam.unmount_sd_card()
