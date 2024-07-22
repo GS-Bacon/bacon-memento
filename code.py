@@ -114,24 +114,6 @@ def main():
     pycam.display.refresh()
     while True:
         pycam.blit(pycam.continuous_capture())
-        pycam._sd_label = label.Label(
-            terminalio.FONT, text="", color=0x0, x=170, y=10, scale=2
-        )
-        pycam._effect_label = label.Label(
-            terminalio.FONT, text="", color=0xFFFFFF, x=4, y=10, scale=2
-        )
-        pycam._mode_label = label.Label(
-            terminalio.FONT, text="", color=0xFFFFFF, x=170, y=10, scale=2
-            )
-        pycam._res_label = label.Label(
-            terminalio.FONT, text="", color=0xFFFFFF, x=0, y=10, scale=2
-        )
-        pycam._topbar = displayio.Group()
-        pycam._topbar.append(pycam._res_label)
-        pycam._topbar.append(pycam._sd_label)
-        pycam._botbar = displayio.Group(x=0, y=210)
-        pycam._botbar.append(pycam._effect_label)
-        pycam._botbar.append(pycam._mode_label)
         pycam.display.refresh()
         pycam.keys_debounce()
         if pycam.ok.fell:
@@ -171,8 +153,10 @@ def main():
                 pycam.keys_debounce()
                 if pycam.select.fell:
                     print("back")
-                    pycam.live_preview_mode()
+                    #pycam.make_camera_ui()
+                    pycam.init_display()
                     pycam.display.refresh()
+                    pycam.live_preview_mode()
                     break
                 if pycam.card_detect.fell:
                     print("SD card removed")
