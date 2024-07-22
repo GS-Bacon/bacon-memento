@@ -10,6 +10,7 @@ try:
 except ImportError:
     pass
 
+from analogio import AnalogIn
 import adafruit_aw9523
 import adafruit_lis3dh
 import bitmaptools
@@ -166,6 +167,7 @@ class BaconPyCameraBase:
         displayio.release_displays()
         self._i2c = board.I2C()
         self._spi = board.SPI()
+        self.batt=AnalogIn(board.BATTERY_MONITOR)
         self._timestamp = time.monotonic()
         self._bigbuf = None
         self._botbar = None
