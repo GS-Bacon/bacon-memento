@@ -24,7 +24,9 @@ res_label = label.Label(
 pycam.splash.append(sd_label)
 pycam.splash.append(res_label)
 pycam.init_display()
+time.sleep(1)
 while True:
     #pycam.init_display()
+    a=pycam.splash[0].text=pycam.cam_status.res
     pycam.display.refresh()
     time.sleep(0.5)
