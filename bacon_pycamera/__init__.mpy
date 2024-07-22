@@ -94,6 +94,19 @@ class BaconPyCameraBase:
         0x3000,
         0x00,
     )
+
+    led_levels = [0.0, 0.1, 0.2, 0.5, 1.0]
+
+    colors = [
+        0xFFFFFF,
+        0xFF0000,
+        0xFFFF00,
+        0x00FF00,
+        0x00FFFF,
+        0x0000FF,
+        0xFF00FF,
+        [colorwheel(i * (256 // 8)) for i in range(8)],
+    ]
     _INIT_SEQUENCE = (
         b"\x01\x80\x78"  # _SWRESET and Delay 120ms
         b"\x11\x80\x05"  # _SLPOUT and Delay 5ms
@@ -477,6 +490,33 @@ See Learn Guide."""
             self.preview_scale = 240 / _width
         self.display.refresh()
 
+    @property
+    def led_level(self):
+        """Get or set the LED level, from 0 to 4"""
+        return self._led_level
+
+    @led_level.setter
+    def led_level(self, new_level):
+        level = (new_level + len(self.led_levels)) % len(self.led_levels)
+        self._led_level = level
+        self.pixels.brightness = self.led_levels[level]
+        self.led_color = self.led_color
+
+    @property
+    def led_color(self):
+        """Get or set the LED color, from 0 to 7"""
+        return self._led_color
+
+    @led_color.setter
+    def led_color(self, new_color):
+        color = (new_color + len(self.colors)) % len(self.colors)
+        self._led_color = color
+        colors = self.colors[color]
+        print("colors", colors)
+        if isinstance(colors, int):
+            self.pixels.fill(colors)
+        else:
+            self.pixels[:] = colors
     def display_message(self, message, color=0xFF0000, scale=2, full_screen=False):
         """Display a message on the TFT"""
         text_area = label.Label(terminalio.FONT, text=message, color=color, scale=scale)
@@ -676,12 +716,14 @@ See Learn Guide."""
         """Switch the camera to continuous-capture mode"""
         pass  # pylint: disable=unnecessary-pass
 
+
 class CameraStatus:
     """a
     """
     SDMount:bool=False
     SDExist:bool=False
     res:str=""
+    led_level:int=0
 
 class BaconPyCamera(BaconPyCameraBase):
     def __init__(self, init_autofocus=True):
