@@ -683,7 +683,19 @@ class CameraStatus:
     SDExist:bool=False
     res:str=""
 
+class BaconPyCamera(BaconPyCameraBase):
+    def __init__(self, init_autofocus=True):
+        super().__init__()
+        self.init_accelerometer()
+        self.init_neopixel()
+        self.init_display()
+        self.init_camera(init_autofocus)
 
+        try:
+            self.mount_sd_card()
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            # No SD card inserted, it's OK
+            print(exc)
 if __name__=="__main__":
     BPCB=BaconPyCameraBase()
     BPCB.init_accelerometer()
