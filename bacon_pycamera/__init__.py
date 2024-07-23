@@ -630,7 +630,7 @@ See Learn Guide."""
         print("Writing to", filename)
         return open(filename, "wb")
 
-    def capture_jpeg(self):
+    def capture_jpeg(self)->bool:
         """Capture a jpeg file and save it to the SD card"""
         try:
             os.stat("/sd")
@@ -643,6 +643,7 @@ See Learn Guide."""
         )
         time.sleep(0.1)
         jpeg = self.camera.take(1)
+        print(jpeg)
         if jpeg is not None:
             print(f"Captured {len(jpeg)} bytes of jpeg data")
             print("Resolution %d x %d" % (self.camera.width, self.camera.height))
@@ -653,8 +654,10 @@ See Learn Guide."""
                     dest.write(jpeg[offset : offset + chunksize])
                     print(end=".")
             print("# Wrote image")
+            return True
         else:
             print("# frame capture failed")
+            return False
     def continuous_capture(self):
         """Capture an image into an internal buffer.
 

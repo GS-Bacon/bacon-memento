@@ -130,9 +130,13 @@ class camera():
                 #pycam.stop_motion_frame += 1
                 try:
                     self.pycam.display_message("Snap!", color=0x0000FF)
-                    self.pycam.capture_jpeg()
-                    self.pycam.tone(100, 0.05)
-                    self.pycam.tone(50, 0.05)
+                    if self.pycam.capture_jpeg():
+                        self.pycam.tone(100, 0.05)
+                        self.pycam.tone(50, 0.05)
+                    else:
+                        self.pycam.display_message("failed...", color=0x0000FF)
+                        self.pycam.tone(50, 0.05)
+                        self.pycam.tone(100, 0.05)
                 except TypeError as e:
                     self.pycam.display_message("Failed", color=0xFF0000)
                     time.sleep(0.5)
