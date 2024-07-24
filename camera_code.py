@@ -21,6 +21,12 @@ class camera():
         self.splash = displayio.Group()
         self.battery_p:int=0
         self.sd_p:int=0  #def capture_ui(self):
+        self.last_frame=None
+        self.sd_label=None
+        self.battery_label=None
+        self.res_label=None
+        self.focus_label=None
+
     def preview(self,bitmap):
         print("go preview")
         all_images = [
@@ -81,41 +87,49 @@ class camera():
                         now_counter=image_counter
                     self.pycam.blit(bitmap, y_offset=0)
     
-    def main_roop(self):
-        last_frame = displayio.Bitmap(self.pycam.camera.width, self.pycam.camera.height, 65535)
-        self.pycam.init_display()
-        bitmap = displayio.Bitmap(self.pycam.display.width, self.pycam.display.height, 65535)
-        sd_label = label.Label(
+    def init(self):
+        self.last_frame = displayio.Bitmap(self.pycam.camera.width, self.pycam.camera.height, 65535)
+        self.sd_label = label.Label(
             terminalio.FONT, text='SD Card {: >3}%'.format(self.sd_p), x=160, y=10, scale=1
             )
-        battery_label = label.Label(
+        self.battery_label = label.Label(
             terminalio.FONT, text='Battery {: >3}%'.format(self.battery_p), x=160, y=20, scale=1
             )
-        res_label = label.Label(
+        self.res_label = label.Label(
             terminalio.FONT, text=self.pycam.cam_status.res, x=0, y=10, scale=1
             )
-        focus_label = label.Label(
+        self.focus_label = label.Label(
             terminalio.FONT, text="", x=0, y=20, scale=1
             )
-        self.pycam.splash.append(sd_label)
-        self.pycam.splash.append(battery_label)
-        self.pycam.splash.append(res_label)
+    def main_roop(self):
+        self.init()
+        self.pycam.init_display()
+        batt_test=0
+        batt_test_counter=0
+        bitmap = displayio.Bitmap(self.pycam.display.width, self.pycam.display.height, 65535)
+        self.pycam.splash.append(self.sd_label)
+        self.pycam.splash.append(self.battery_label)
+        self.pycam.splash.append(self.res_label)
         print(type(self.pycam.splash))
         pin=self.pycam.batt
         self.battery_p=round((pin.value-500)/41000*100)
-        battery_label.text='Battery {: >3}%'.format(self.battery_p)
+        self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
         batt_counter=0
+        batt_sum:float=0.0
         while True:
             self.pycam.display.refresh()
             self.pycam.keys_debounce()
             #self.capture_ui()
             self.pycam.blit(self.pycam.continuous_capture())
             #バッテリー残量表示
-            if batt_counter%30==0:
+            if batt_counter%60==0:
                 batt_counter=0
                 pin=self.pycam.batt
-                self.battery_p=round((pin.value-500)/41500*100)
-                battery_label.text='Battery {: >3}%'.format(self.battery_p)
+                self.battery_p=round(batt_sum/60.0)
+                self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
+                batt_sum=0
+                print(self.battery_label.text)
+            batt_sum+=round((round(pin.value,-2))/41000*100,-2)
             batt_counter=batt_counter+1
             if self.pycam.shutter.long_press:
                 print("FOCUS")
@@ -126,7 +140,7 @@ class camera():
                 print(self.pycam.autofocus_status)
             if self.pycam.shutter.short_count:
                 print("Shutter released")
-                self.pycam.capture_into_bitmap(last_frame)
+                self.pycam.capture_into_bitmap(self.last_frame)
                 #pycam.stop_motion_frame += 1
                 try:
                     self.pycam.display_message("Snap!", color=0x0000FF)
@@ -146,6 +160,8 @@ class camera():
                 self.pycam.live_preview_mode()
             if self.pycam.select.fell:
                 self.preview(bitmap)
+            if self.pycam.ok.fell:
+                self.pycam.led_level+=1
 
 if __name__=="__main__":
     cameras=camera()
