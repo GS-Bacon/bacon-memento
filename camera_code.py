@@ -148,8 +148,8 @@ class camera():
                 print("FOCUS")
                 print(self.pycam.autofocus_status)
                 self.pycam.autofocus()
-                #self.pycam.tone(200, 0.05)
-                #self.pycam.tone(100, 0.05)
+                self.pycam.tone(90, 0.05)
+                self.pycam.tone(60, 0.05)
                 print(self.pycam.autofocus_status)
             if self.pycam.shutter.short_count:
                 print("Shutter released")
@@ -158,8 +158,8 @@ class camera():
                 try:
                     self.pycam.display_message("Snap!", color=0x0000FF)
                     if self.pycam.capture_jpeg():
-                        self.pycam.tone(100, 0.05)
-                        self.pycam.tone(50, 0.05)
+                        self.pycam.tone(60, 0.05)
+                        self.pycam.tone(30, 0.05)
                     else:
                         self.pycam.display_message("failed...", color=0x0000FF)
                         #self.pycam.tone(50, 0.05)
