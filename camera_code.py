@@ -26,8 +26,10 @@ class camera():
         self.battery_label=None
         self.res_label=None
         self.focus_label=None
+        self.file_name=None
 
     def preview(self,bitmap):
+        self.file_name.text=f'aaaaa'
         print("go preview")
         all_images = [
         f"/sd/{filename}"
@@ -37,55 +39,54 @@ class camera():
         image_counter = -1
         last_image_counter = 0
         now_counter=0
-        bitmap.fill(0b01000_010000_01000)
+        #bitmap.fill(0b01000_010000_01000)
         while True:
             self.pycam.keys_debounce()
             if self.pycam.select.fell:
-                #bitmap.fill(0b01000_010000_01000)
-                #self.pycam.blit(bitmap, y_offset=0)
                 self.pycam.live_preview_mode()
                 self.pycam.init_display()
                 print("back")
                 break
             if all_images:
-                    if self.pycam.left.fell:
-                        image_counter = (last_image_counter - 1) % len(all_images)
-                        #deadline = now
-                        print("left")
-                    if self.pycam.right.fell:
-                        image_counter = (last_image_counter + 1) % len(all_images)
-                        #deadline = now
-                        print("right")
-                    if now_counter!=image_counter:
-                        #print(now, deadline, ticks_less(deadline, now), all_images)
-                        #deadline = ticks_add(deadline, DISPLAY_INTERVAL)
-                        filename = all_images[image_counter]
-                        last_image_counter = image_counter
-                        print(filename)
-                        h,w=decoder.open(filename)
-                        bw, bh = bitmap.width, bitmap.height
-                        scale=1
-                        print("a")
-                        while (w >> scale) > bw or (h >> scale) > bh and scale < 3:
-                            scale += 1
-                        sw = w >> scale
-                        sh = h >> scale
-                        #print(f"will load at {scale=}, giving {sw}x{sh} pixels")
-                        if sw > bw:  # left/right sides cut off
-                            x = 0
-                            x1 = (sw - bw) // 2
-                        else:  # horizontally centered
-                            x = (bw - sw) // 2
-                            x1 = 0
-                        if sh > bh:  # top/bottom sides cut off
-                            y = 0
-                            y1 = (sh - bh) // 2
-                        else:  # vertically centered
-                            y = (bh - sh) // 2
-                            y1 = 0
-                        decoder.decode(bitmap,x=0,y=40,x1=x1,y1=y1,scale=scale)
-                        now_counter=image_counter
-                    self.pycam.blit(bitmap, y_offset=0)
+                if self.pycam.left.fell:
+                    image_counter = (last_image_counter - 1) % len(all_images)
+                    #deadline = now
+                    print("left")
+                if self.pycam.right.fell:
+                    image_counter = (last_image_counter + 1) % len(all_images)
+                    #deadline = now
+                    print("right")
+                if now_counter!=image_counter:
+                    #print(now, deadline, ticks_less(deadline, now), all_images)
+                    #deadline = ticks_add(deadline, DISPLAY_INTERVAL)
+                    filename = all_images[image_counter]
+                    last_image_counter = image_counter
+                    print(filename)
+                    h,w=decoder.open(filename)
+                    bw, bh = bitmap.width, bitmap.height
+                    scale=1
+                    print("a")
+                    while (w >> scale) > bw or (h >> scale) > bh and scale < 3:
+                        scale += 1
+                    sw = w >> scale
+                    sh = h >> scale
+                    #print(f"will load at {scale=}, giving {sw}x{sh} pixels")
+                    if sw > bw:  # left/right sides cut off
+                        x = 0
+                        x1 = (sw - bw) // 2
+                    else:  # horizontally centered
+                        x = (bw - sw) // 2
+                        x1 = 0
+                    if sh > bh:  # top/bottom sides cut off
+                        y = 0
+                        y1 = (sh - bh) // 2
+                    else:  # vertically centered
+                        y = (bh - sh) // 2
+                        y1 = 0
+                    decoder.decode(bitmap,x=0,y=40,x1=x1,y1=y1,scale=scale)
+                    now_counter=image_counter
+                self.pycam.blit(bitmap, y_offset=0)
+                self.pycam.display.root_group = self.splash
     
     def init(self):
         self.last_frame = displayio.Bitmap(self.pycam.camera.width, self.pycam.camera.height, 65535)
@@ -101,16 +102,19 @@ class camera():
         self.focus_label = label.Label(
             terminalio.FONT, text="", x=0, y=20, scale=1
             )
+        self.file_name=label.Label(
+            terminalio.FONT, text=f'', x=10, y=220, scale=1
+            )
+        self.pycam.splash.append(self.sd_label)
+        self.pycam.splash.append(self.battery_label)
+        self.pycam.splash.append(self.res_label)
+        self.pycam.splash.append(self.file_name)
     def main_roop(self):
         self.init()
         self.pycam.init_display()
         batt_test=0
         batt_test_counter=0
         bitmap = displayio.Bitmap(self.pycam.display.width, self.pycam.display.height, 65535)
-        self.pycam.splash.append(self.sd_label)
-        self.pycam.splash.append(self.battery_label)
-        self.pycam.splash.append(self.res_label)
-        print(type(self.pycam.splash))
         pin=self.pycam.batt
         self.battery_p=round((pin.value-500)/41000*100)
         self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
@@ -160,6 +164,7 @@ class camera():
                 self.pycam.live_preview_mode()
             if self.pycam.select.fell:
                 self.preview(bitmap)
+                self.pycam.live_preview_mode()
             if self.pycam.ok.fell:
                 self.pycam.led_level+=1
 
