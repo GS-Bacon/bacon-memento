@@ -21,15 +21,17 @@ class camera():
         self.splash = displayio.Group()
         self.battery_p:int=0
         self.sd_p:int=0  #def capture_ui(self):
+        self.led_level:int=0
         self.last_frame=None
         self.sd_label=None
         self.battery_label=None
         self.res_label=None
         self.focus_label=None
         self.file_name=None
+        self.led_label=None
 
     def preview(self,bitmap):
-        self.file_name.text=f'aaaaa'
+        self.file_name.text=f''
         print("go preview")
         all_images = [
         f"/sd/{filename}"
@@ -50,10 +52,12 @@ class camera():
             if all_images:
                 if self.pycam.left.fell:
                     image_counter = (last_image_counter - 1) % len(all_images)
+                    bitmap.fill(0b01000_010000_01000)
                     #deadline = now
                     print("left")
                 if self.pycam.right.fell:
                     image_counter = (last_image_counter + 1) % len(all_images)
+                    bitmap.fill(0b01000_010000_01000)
                     #deadline = now
                     print("right")
                 if now_counter!=image_counter:
@@ -103,12 +107,16 @@ class camera():
             terminalio.FONT, text="", x=0, y=20, scale=1
             )
         self.file_name=label.Label(
-            terminalio.FONT, text=f'', x=10, y=220, scale=1
+            terminalio.FONT, text=f'', x=140, y=220, scale=1
+            )
+        self.led_label=label.Label(
+            terminalio.FONT, text=f'LED {self.pycam.led_level}', x=10, y=220, scale=1
             )
         self.pycam.splash.append(self.sd_label)
         self.pycam.splash.append(self.battery_label)
         self.pycam.splash.append(self.res_label)
         self.pycam.splash.append(self.file_name)
+        self.pycam.splash.append(self.led_label)
     def main_roop(self):
         self.init()
         self.pycam.init_display()
@@ -125,6 +133,7 @@ class camera():
             self.pycam.keys_debounce()
             #self.capture_ui()
             self.pycam.blit(self.pycam.continuous_capture())
+            self.led_label.text=f'LED {self.pycam.led_level}'
             #バッテリー残量表示
             if batt_counter%60==0:
                 batt_counter=0
