@@ -142,14 +142,14 @@ class camera():
                 self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
                 batt_sum=0
                 print(self.battery_label.text)
-            batt_sum+=round((round(pin.value,-2))/41000*100,-2)
+            batt_sum+=round((round(pin.value,-2))/41000*100)
             batt_counter=batt_counter+1
             if self.pycam.shutter.long_press:
                 print("FOCUS")
                 print(self.pycam.autofocus_status)
                 self.pycam.autofocus()
-                self.pycam.tone(200, 0.05)
-                self.pycam.tone(100, 0.05)
+                #self.pycam.tone(200, 0.05)
+                #self.pycam.tone(100, 0.05)
                 print(self.pycam.autofocus_status)
             if self.pycam.shutter.short_count:
                 print("Shutter released")
@@ -162,8 +162,8 @@ class camera():
                         self.pycam.tone(50, 0.05)
                     else:
                         self.pycam.display_message("failed...", color=0x0000FF)
-                        self.pycam.tone(50, 0.05)
-                        self.pycam.tone(100, 0.05)
+                        #self.pycam.tone(50, 0.05)
+                        #self.pycam.tone(100, 0.05)
                 except TypeError as e:
                     self.pycam.display_message("Failed", color=0xFF0000)
                     time.sleep(0.5)
