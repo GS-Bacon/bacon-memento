@@ -10,7 +10,7 @@ from analogio import AnalogIn
 import board
 from jpegio import JpegDecoder
 decoder = JpegDecoder()
-
+import bitmaptools
 class camera():
     def __init__(self) -> None:
         self.pycam=bacon_pycamera.BaconPyCamera()
@@ -89,6 +89,7 @@ class camera():
                         y1 = 0
                     decoder.decode(bitmap,x=0,y=40,x1=x1,y1=y1,scale=scale)
                     now_counter=image_counter
+                    #bitmaptools.rotozoom(bitmap,bitmap,scale=1.2)
                 self.pycam.blit(bitmap, y_offset=0)
                 self.pycam.display.root_group = self.splash
     
