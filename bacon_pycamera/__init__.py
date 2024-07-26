@@ -97,6 +97,15 @@ class BaconPyCameraBase:
     )
 
     led_levels = [0.0, 0.1, 0.2, 0.5, 1.0]
+    #camera_gains=[
+    #    espcamera.GainCeiling.GAIN_2X,
+    #    espcamera.GainCeiling.GAIN_4X,
+    #    espcamera.GainCeiling.GAIN_8X,
+    #    espcamera.GainCeiling.GAIN_32X,
+    #    espcamera.GainCeiling.GAIN_64X,
+    #    espcamera.GainCeiling.GAIN_128X
+    #]
+    camera_gains=[True,0,5,10,15,20,25,30]
 
     colors = [
         0xFFFFFF,
@@ -346,9 +355,12 @@ See Learn Guide."""
 
         self.led_color = 0
         self.led_level = 0
+        self.camera_gain= 0
         #self.effect = microcontroller.nvm[_NVM_EFFECT]
         self.camera.saturation = 4
         self.camera.quality=12
+        self.camera.gain_ctrl=True
+        self.camera.bpc=True
         self.resolution = microcontroller.nvm[_NVM_RESOLUTION]
         #self.mode = microcontroller.nvm[_NVM_MODE]
         self.autofocus_init()
@@ -492,6 +504,21 @@ See Learn Guide."""
             _width = int(self.resolutions[self.resolution].split("x")[0])
             self.preview_scale = 240 / _width
         self.display.refresh()
+
+    @property
+    def camera_gain(self):
+        """Get or set the Camera Gain,from 0to5"""
+        return self._camera_gain
+    @camera_gain.setter
+    def  camera_gain(self,new_gain):
+        level=(new_gain+len(self.camera_gains))%len(self.camera_gains)
+        if level==True:
+            self.camera.gain_ctrl=True
+            self._camera_gain=level
+        else:
+            self.camera.gain_ctrl=False
+            self._camera_gain=level
+            self.camera.agc_gain=self.camera_gains[level]
 
     @property
     def led_level(self):

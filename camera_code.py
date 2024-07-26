@@ -3,7 +3,6 @@ import time
 import displayio
 import bacon_pycamera
 import os
-
 import terminalio
 from adafruit_display_text import label
 from analogio import AnalogIn
@@ -113,24 +112,34 @@ class camera():
         self.led_label=label.Label(
             terminalio.FONT, text=f'LED {self.pycam.led_level}', x=10, y=220, scale=1
             )
+        self.gain_label=label.Label(
+            terminalio.FONT, text=f'Gain {self.pycam.camera_gain}', x=140, y=220, scale=1
+            )
         self.pycam.splash.append(self.sd_label)
         self.pycam.splash.append(self.battery_label)
         self.pycam.splash.append(self.res_label)
         self.pycam.splash.append(self.file_name)
         self.pycam.splash.append(self.led_label)
+        self.pycam.splash.append(self.gain_label)
     def main_roop(self):
         self.init()
         self.pycam.init_display()
         batt_test=0
         batt_test_counter=0
         bitmap = displayio.Bitmap(self.pycam.display.width, self.pycam.display.height, 65535)
+        path="/sd/battery.csv"
         pin=self.pycam.batt
         self.battery_p=round((pin.value-500)/41000*100)
         self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
         batt_counter=0
         batt_sum:float=0.0
         while True:
+            if self.pycam.camera_gain==0:
+                self.gain_label.text="Gain Auto"
+            else:
+                self.gain_label.text=f'Gain {self.pycam.camera_gain}'
             self.pycam.display.refresh()
+            #print(f'aec:{self.pycam.camera.aec_value}')
             self.pycam.keys_debounce()
             #self.capture_ui()
             self.pycam.blit(self.pycam.continuous_capture())
@@ -143,6 +152,12 @@ class camera():
                 self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
                 batt_sum=0
                 print(self.battery_label.text)
+                
+                s=f'{time.time()},{pin.value}\n'
+                with open(path,mode='a')as f:
+                    print(s)
+                    f.write(s)
+            
             batt_sum+=round((round(pin.value,-2))/41000*100)
             batt_counter=batt_counter+1
             if self.pycam.shutter.long_press:
@@ -177,7 +192,10 @@ class camera():
                 self.pycam.live_preview_mode()
             if self.pycam.ok.fell:
                 self.pycam.led_level+=1
-
+            if self.pycam.up.fell:
+                self.pycam.camera_gain+=1
+            if self.pycam.down.fell:
+                self.pycam.camera_gain-=1
 if __name__=="__main__":
     cameras=camera()
     cameras.main_roop()
