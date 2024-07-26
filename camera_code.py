@@ -124,12 +124,9 @@ class camera():
     def main_roop(self):
         self.init()
         self.pycam.init_display()
-        batt_test=0
-        batt_test_counter=0
         bitmap = displayio.Bitmap(self.pycam.display.width, self.pycam.display.height, 65535)
-        path="/sd/battery2.csv"
         pin=self.pycam.batt
-        self.battery_p=round((pin.value-500)/41000*100)
+        self.battery_p=100-round(abs(41000-round(pin.value))/9000*100)
         self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
         batt_counter=0
         batt_sum:float=0.0
@@ -152,13 +149,7 @@ class camera():
                 self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
                 batt_sum=0
                 print(self.battery_label.text)
-                s=f'{time.time()},{pin.value}\n'
-                if not self.battery_p==100:
-                    with open(path,mode='a')as f:
-                        print(s)
-                        f.write(s)
-            
-            batt_sum+=round(abs(41000-round(pin.value))/9000*100)
+            batt_sum+=100-round(abs(41000-round(pin.value))/9000*100)
             batt_counter=batt_counter+1
             if self.pycam.shutter.long_press:
                 print("FOCUS")
