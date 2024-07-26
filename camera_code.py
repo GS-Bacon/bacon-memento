@@ -127,7 +127,7 @@ class camera():
         batt_test=0
         batt_test_counter=0
         bitmap = displayio.Bitmap(self.pycam.display.width, self.pycam.display.height, 65535)
-        path="/sd/battery.csv"
+        path="/sd/battery2.csv"
         pin=self.pycam.batt
         self.battery_p=round((pin.value-500)/41000*100)
         self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
@@ -152,13 +152,13 @@ class camera():
                 self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
                 batt_sum=0
                 print(self.battery_label.text)
-                
                 s=f'{time.time()},{pin.value}\n'
-                with open(path,mode='a')as f:
-                    print(s)
-                    f.write(s)
+                if not self.battery_p==100:
+                    with open(path,mode='a')as f:
+                        print(s)
+                        f.write(s)
             
-            batt_sum+=round((round(pin.value,-2))/41000*100)
+            batt_sum+=round(abs(41000-round(pin.value))/9000*100)
             batt_counter=batt_counter+1
             if self.pycam.shutter.long_press:
                 print("FOCUS")
