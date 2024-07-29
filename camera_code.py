@@ -40,6 +40,7 @@ class camera():
         image_counter = -1
         last_image_counter = 0
         now_counter=0
+        self.pycam.live_preview_mode()
         #bitmap.fill(0b01000_010000_01000)
         while True:
             self.pycam.keys_debounce()
@@ -113,7 +114,7 @@ class camera():
             terminalio.FONT, text=f'LED {self.pycam.led_level}', x=10, y=220, scale=1
             )
         self.gain_label=label.Label(
-            terminalio.FONT, text=f'Gain {self.pycam.camera_gain}', x=140, y=220, scale=1
+            terminalio.FONT, text='Gain {: >4}'.format(self.pycam.camera_gain), x=180, y=220, scale=1
             )
         self.pycam.splash.append(self.sd_label)
         self.pycam.splash.append(self.battery_label)
@@ -130,11 +131,14 @@ class camera():
         self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
         batt_counter=0
         batt_sum:float=0.0
+        print(self.pycam.camera_gain)
+        self.pycam.camera_gain+=1
+        self.pycam.camera_gain-=1
         while True:
             if self.pycam.camera_gain==0:
                 self.gain_label.text="Gain Auto"
             else:
-                self.gain_label.text=f'Gain {self.pycam.camera_gain}'
+                self.gain_label.text='Gain {: >4}'.format(self.pycam.camera_gain)
             self.pycam.display.refresh()
             #print(f'aec:{self.pycam.camera.aec_value}')
             self.pycam.keys_debounce()
@@ -185,8 +189,10 @@ class camera():
                 self.pycam.led_level+=1
             if self.pycam.up.fell:
                 self.pycam.camera_gain+=1
+                print(self.pycam.camera_gain)
             if self.pycam.down.fell:
                 self.pycam.camera_gain-=1
+                print(self.pycam.camera_gain)
 if __name__=="__main__":
     cameras=camera()
     cameras.main_roop()
