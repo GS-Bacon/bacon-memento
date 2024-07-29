@@ -361,6 +361,7 @@ See Learn Guide."""
         self.camera.quality=12
         self.camera.gain_ctrl=True
         self.camera.bpc=True
+        self.camera.dcw=True
         self.resolution = microcontroller.nvm[_NVM_RESOLUTION]
         #self.mode = microcontroller.nvm[_NVM_MODE]
         self.autofocus_init()
