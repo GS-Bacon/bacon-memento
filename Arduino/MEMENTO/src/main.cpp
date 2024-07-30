@@ -5,9 +5,9 @@
 // Original Example: https://github.com/adafruit/Adafruit_PyCamera/blob/main/examples/pycamera_test/pycamera_test.ino
 //
 #include <Arduino.h>
-#include "Adafruit_PyCamera.h"
+#include "bacon_PyCamera.h"
 
-Adafruit_PyCamera pycamera;
+bacon_PyCamera pycamera;
 framesize_t validSizes[] = {FRAMESIZE_QQVGA, FRAMESIZE_QVGA, FRAMESIZE_HVGA,
                             FRAMESIZE_VGA,   FRAMESIZE_SVGA, FRAMESIZE_XGA,
                             FRAMESIZE_HD,    FRAMESIZE_SXGA, FRAMESIZE_UXGA,
@@ -35,12 +35,12 @@ void loop() {
   loopn += 8;
 
   pycamera.readButtons();
-  Serial.printf("Buttons: 0x%08X\n\r",  pycamera.readButtons());
+  //Serial.printf("Buttons: 0x%08X\n\r",  pycamera.readButtons());
 
   // pycamera.timestamp();
   pycamera.captureFrame();
 
-  // once the frame is captured we can draw ontot he framebuffer
+  // c
   if (pycamera.justPressed(AWEXP_SD_DET)) {
     Serial.println(F("SD Card removed"));
     pycamera.endSD();
@@ -62,10 +62,7 @@ void loop() {
 
   float A0_voltage = analogRead(A0) / 4096.0 * 3.3;
   float A1_voltage = analogRead(A1) / 4096.0 * 3.3;
-  if (loopn == 0) {
-    Serial.printf("A0 = %0.1f V, A1 = %0.1f V, Battery = %0.1f V\n\r",
-                  A0_voltage, A1_voltage, pycamera.readBatteryVoltage());
-  }
+
   pycamera.fb->setCursor(0, 0);
   pycamera.fb->setTextSize(2);
   pycamera.fb->setTextColor(pycamera.color565(255, 255, 255));
@@ -179,5 +176,5 @@ void loop() {
     }
   }
 
-  delay(100);
+  delay(10);
 }
