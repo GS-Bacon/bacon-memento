@@ -31,8 +31,8 @@ void setup() {
 
 void loop() {
   static uint8_t loopn = 0;
-  pycamera.setNeopixel(pycamera.Wheel(loopn));
-  loopn += 8;
+  //pycamera.setNeopixel(pycamera.Wheel(loopn));
+  loopn ++;
 
   pycamera.readButtons();
   //Serial.printf("Buttons: 0x%08X\n\r",  pycamera.readButtons());
@@ -59,20 +59,6 @@ void loop() {
     pycamera.fb->print(F("SD Card inserted"));
     delay(200);
   }
-
-  float A0_voltage = analogRead(A0) / 4096.0 * 3.3;
-  float A1_voltage = analogRead(A1) / 4096.0 * 3.3;
-
-  pycamera.fb->setCursor(0, 0);
-  pycamera.fb->setTextSize(2);
-  pycamera.fb->setTextColor(pycamera.color565(255, 255, 255));
-  pycamera.fb->print("A0 = ");
-  pycamera.fb->print(A0_voltage, 1);
-  pycamera.fb->print("V, A1 = ");
-  pycamera.fb->print(A1_voltage, 1);
-  pycamera.fb->print("V\nBattery = ");
-  pycamera.fb->print(pycamera.readBatteryVoltage(), 1);
-  pycamera.fb->print(" V");
 
   // print the camera frame size
   pycamera.fb->setCursor(0, 200);
