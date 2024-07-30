@@ -112,9 +112,9 @@ public:
   PyCameraFB *fb = NULL;
 
   /** @brief Adafruit NeoPixel object for single pixel control. */
-  Adafruit_NeoPixel pixel;
+  Adafruit_NeoPixel pixel=pixel=Adafruit_NeoPixel(1,PIN_NEOPIXEL);;
   /** @brief Adafruit NeoPixel object for ring control. */
-  Adafruit_NeoPixel ring;
+  Adafruit_NeoPixel ring =Adafruit_NeoPixel(8,A1,NEO_GRBW + NEO_KHZ800);
   /** @brief Adafruit AW9523 object for I/O expander functionality. */
   Adafruit_AW9523 aw;
   /** @brief Pointer to the I2C device for accelerometer. */

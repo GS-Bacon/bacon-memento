@@ -71,15 +71,15 @@ bool bacon_PyCamera::begin() {
   digitalWrite(SPEAKER, LOW);
 
   // Setup and turn off Neopixel
-  pixel=Adafruit_NeoPixel(1,PIN_NEOPIXEL);
+  
   pixel.begin();
-  pixel.setBrightness(50);
+  pixel.setBrightness(0);
   setNeopixel(0x0);
 
   // Setup and turn off Neopixel Ring
-  ring=Adafruit_NeoPixel(8,A1,NEO_GRBW + NEO_KHZ800);
+  //ring=Adafruit_NeoPixel(8,A1,NEO_GRBW + NEO_KHZ800);
   ring.begin();
-  ring.setBrightness(255);
+  ring.setBrightness(0);
   setRing(0x0);
 
   // boot button is also shutter
@@ -219,10 +219,7 @@ bool bacon_PyCamera::initExpander(void) {
 /**
  * @brief Initializes the display.
  *
- * @details This method sets up the display for the PyCamera. It starts by
- * initializing the backlight control, then initializes the ST7789 screen with
- * the specified dimensions and rotation. Finally, it fills the screen with a
- * green color and turns on the backlight.
+ * @details c
  *
  * @return true if the display is successfully initialized, false otherwise.
  */

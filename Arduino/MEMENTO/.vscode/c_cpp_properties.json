@@ -10,6 +10,7 @@
             "includePath": [
                 "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/include",
                 "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/src",
+                "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/.pio/libdeps/adafruit_camera_esp32s3/LovyanGFX/src",
                 "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/.pio/libdeps/adafruit_camera_esp32s3/Adafruit PyCamera Library",
                 "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/.pio/libdeps/adafruit_camera_esp32s3/SdFat - Adafruit Fork/src",
                 "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/.pio/libdeps/adafruit_camera_esp32s3/Adafruit ST7735 and ST7789 Library",
@@ -219,6 +220,7 @@
                 "C:/Users/A0216/.platformio/packages/framework-arduinoespressif32/cores/esp32",
                 "C:/Users/A0216/.platformio/packages/framework-arduinoespressif32/variants/adafruit_camera_esp32s3",
                 "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/lib/bacon_PyCamera",
+                "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/lib/bacon_lovyanGFX",
                 "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/.pio/libdeps/adafruit_camera_esp32s3/Adafruit seesaw Library",
                 "C:/Users/A0216/.platformio/packages/framework-arduinoespressif32/libraries/ArduinoOTA/src",
                 "C:/Users/A0216/.platformio/packages/framework-arduinoespressif32/libraries/AsyncUDP/src",
@@ -258,6 +260,7 @@
                 "path": [
                     "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/include",
                     "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/src",
+                    "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/.pio/libdeps/adafruit_camera_esp32s3/LovyanGFX/src",
                     "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/.pio/libdeps/adafruit_camera_esp32s3/Adafruit PyCamera Library",
                     "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/.pio/libdeps/adafruit_camera_esp32s3/SdFat - Adafruit Fork/src",
                     "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/.pio/libdeps/adafruit_camera_esp32s3/Adafruit ST7735 and ST7789 Library",
@@ -467,6 +470,7 @@
                     "C:/Users/A0216/.platformio/packages/framework-arduinoespressif32/cores/esp32",
                     "C:/Users/A0216/.platformio/packages/framework-arduinoespressif32/variants/adafruit_camera_esp32s3",
                     "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/lib/bacon_PyCamera",
+                    "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/lib/bacon_lovyanGFX",
                     "c:/Users/A0216/Documents/programming/bacon-memento/Arduino/MEMENTO/.pio/libdeps/adafruit_camera_esp32s3/Adafruit seesaw Library",
                     "C:/Users/A0216/.platformio/packages/framework-arduinoespressif32/libraries/ArduinoOTA/src",
                     "C:/Users/A0216/.platformio/packages/framework-arduinoespressif32/libraries/AsyncUDP/src",
