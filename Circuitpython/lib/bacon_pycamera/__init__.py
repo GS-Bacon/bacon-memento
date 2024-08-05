@@ -407,7 +407,7 @@ See Learn Guide."""
         """Initialize the autofocus engine from ov5640_autofocus.bin"""
         if "/" in __file__:
             binfile = (
-                __file__.rsplit("/", 1)[0].rsplit(".", 1)[0] + "/ov5640_autofocus.bin"
+                "/lib/adafruit_ov5640/ov5640_autofocus.bin"
             )
         else:
             binfile = "ov5640_autofocus.bin"
