@@ -105,7 +105,7 @@ class BaconPyCameraBase:
     #    espcamera.GainCeiling.GAIN_64X,
     #    espcamera.GainCeiling.GAIN_128X
     #]
-    camera_gains=[True,0,5,10,15,20,25,30]
+    camera_gains=[0,5,10,15,20,25,30]
 
     colors = [
         0xFFFFFF,
@@ -361,10 +361,11 @@ See Learn Guide."""
         self.camera.quality=12
         self.camera.gain_ctrl=True
         self.camera.bpc=True
-        self.camera.dcw=True
+        #self.camera.dcw=True
         self.resolution = microcontroller.nvm[_NVM_RESOLUTION]
         #self.mode = microcontroller.nvm[_NVM_MODE]
-        self.autofocus_init()
+        if init_autofocus:
+            self.autofocus_init()
     def deinit_display(self):
         """Release the TFT display"""
         # construct displayio by hand
@@ -513,7 +514,7 @@ See Learn Guide."""
     @camera_gain.setter
     def  camera_gain(self,new_gain):
         level=(new_gain+len(self.camera_gains))%len(self.camera_gains)
-        if level==True:
+        if level==0:
             self.camera.gain_ctrl=True
             self._camera_gain=level
         else:
@@ -670,7 +671,7 @@ See Learn Guide."""
             pixel_format=espcamera.PixelFormat.JPEG,
             frame_size=self.resolution_to_frame_size[self._resolution],
         )
-        time.sleep(0.1)
+        time.sleep(0.2)
         jpeg = self.camera.take(1)
         print(jpeg)
         if jpeg is not None:
