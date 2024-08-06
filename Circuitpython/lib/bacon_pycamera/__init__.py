@@ -207,7 +207,6 @@ class BaconPyCameraBase:
         self.preview_scale = None
         self.overlay_position = [None, None]
         self.overlay_scale = 1.0
-        self.splash = displayio.Group()
         #UI用のラベル
         self.splash = displayio.Group()
         self.cam_status=CameraStatus()

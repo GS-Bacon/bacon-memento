@@ -191,7 +191,13 @@ class camera():
                 self.preview(bitmap)
                 self.pycam.live_preview_mode()
             if self.pycam.ok.fell:
-                self.pycam.led_level+=1
+                print(f'{self.pycam.ok.last_duration=}')
+                if self.pycam.ok.last_duration<0.8:
+                    self.pycam.led_level=0
+                else:
+                    self.pycam.led_level+=1
+                print(f'{self.pycam.led_level=}')
+                self.init_UI()
             if self.pycam.up.fell:
                 self.pycam.camera_gain+=1
                 print(self.pycam.camera_gain)
