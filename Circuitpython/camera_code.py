@@ -34,7 +34,7 @@ class camera():
         self.led_label=None
         self.loop_counter=0
         self.batt_sum:float=0.0
-
+        self.ok_flag:bool=False
     def preview(self,bitmap):
         self.file_name.text=f''
         print("go preview")
@@ -50,6 +50,8 @@ class camera():
         self.pycam.live_preview_mode()
         #bitmap.fill(0b01000_010000_01000)
         while True:
+            self.pycam.display.refresh()
+            self.batt_check()
             self.pycam.keys_debounce()
             if self.pycam.select.fell:
                 self.pycam.live_preview_mode()
@@ -82,7 +84,6 @@ class camera():
                     #bitmaptools.rotozoom(bitmap,bitmap,scale=1.2)
                 self.pycam.blit(bitmap)
                 self.pycam.display.root_group = self.splash
-    
     def init_UI(self):
         self.last_frame = displayio.Bitmap(self.pycam.camera.width, self.pycam.camera.height, 65535)
         self.sd_label = label.Label(
@@ -113,6 +114,7 @@ class camera():
         self.pycam.splash.append(self.led_label)
         self.pycam.splash.append(self.gain_label)
     def batt_check(self):
+        self.loop_counter=self.loop_counter+1
         pin=self.pycam.batt
         if self.loop_counter%60==0:
             self.battery_p=round(self.batt_sum/60.0)
@@ -141,21 +143,22 @@ class camera():
         self.pycam.camera.exposure_ctrl=False
         self.pycam.camera.agc_gain=5
         self.pycam.camera.aec_value=830
-        self.pycam.camera.brightness=2
+        self.pycam.camera.brightness=0
         self.pycam.camera.bpc=False
         self.pycam.camera.denoise=6
         self.pycam.camera.quality=6
         self.pycam.camera.bpc=False
         self.pycam.camera.wpc=False
         
-        self.pycam.camera.gain_ceiling=espcamera.GainCeiling.GAIN_128X
+        self.pycam.camera.gain_ceiling=espcamera.GainCeiling.GAIN_2X
         pin=self.pycam.batt
         self.battery_p=100-round(abs(41000-round(pin.value))/9000*100)
         self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
         while True:
             self.pycam.keys_debounce()
-            self.loop_counter=self.loop_counter+1
+            self.set_main_UI()
             self.batt_check()
+            self.pycam.display.refresh()
             self.pycam.blit(self.pycam.continuous_capture())
             #print(f'{self.pycam.camera.gain_ctrl=}\n{self.pycam.camera.agc_gain=}\n{self.pycam.camera.aec_value=}')
             if self.pycam.shutter.long_press:
@@ -187,17 +190,18 @@ class camera():
                 self.pycam.live_preview_mode()
                 self.pycam.camera.aec_value=830
             if self.pycam.select.fell:
-                self.set_main_UI()
                 self.preview(bitmap)
+                self.set_main_UI()
                 self.pycam.live_preview_mode()
             if self.pycam.ok.fell:
-                print(f'{self.pycam.ok.last_duration=}')
-                if self.pycam.ok.last_duration<0.8:
-                    self.pycam.led_level=0
-                else:
-                    self.pycam.led_level+=1
+                self.pycam.led_level+=1
+                self.ok_flag=True
                 print(f'{self.pycam.led_level=}')
-                self.init_UI()
+            if self.pycam.ok.rose:
+                self.ok_flag=False
+            if self.pycam.ok.current_duration>1 and self.ok_flag:
+                print(f'{self.pycam.ok.current_duration=}')
+                self.pycam.led_level=0
             if self.pycam.up.fell:
                 self.pycam.camera_gain+=1
                 print(self.pycam.camera_gain)
