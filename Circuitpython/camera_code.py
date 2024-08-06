@@ -36,7 +36,7 @@ class camera():
         self.batt_sum:float=0.0
         self.ok_flag:bool=False
     def preview(self,bitmap):
-        self.file_name.text=f''
+        #self.pycam.display.refresh()
         print("go preview")
         all_images = [
         f"/sd/{filename}"
@@ -47,12 +47,12 @@ class camera():
         image_counter = -1
         last_image_counter = 0
         now_counter=0
-        self.pycam.live_preview_mode()
-        #bitmap.fill(0b01000_010000_01000)
+        self.led_label.text=""
+        self.gain_label.text=""
+        filename=""
         while True:
-            self.pycam.display.refresh()
-            self.batt_check()
             self.pycam.keys_debounce()
+            self.batt_check()
             if self.pycam.select.fell:
                 self.pycam.live_preview_mode()
                 self.pycam.init_display()
@@ -61,16 +61,16 @@ class camera():
             if all_images:
                 if self.pycam.left.fell:
                     image_counter = (last_image_counter - 1) % len(all_images)
-                    bitmap.fill(0)
+                    #bitmap.fill(0)
                     #deadline = now
                     print("left")
                 if self.pycam.right.fell:
                     image_counter = (last_image_counter + 1) % len(all_images)
-                    bitmap.fill(0)
+                    #bitmap.fill(0)
                     #deadline = now
                     print("right")
                 if now_counter!=image_counter:
-                    bitmap.fill(0)
+                    #bitmap.fill(0)
                     #print(now, deadline, ticks_less(deadline, now), all_images)
                     #deadline = ticks_add(deadline, DISPLAY_INTERVAL)
                     filename = all_images[image_counter]
@@ -81,9 +81,12 @@ class camera():
                     decoder.decode(bitmap,x=0,y=20,x1=0,y1=0,scale=3)
                     print(f'bitmap size')
                     now_counter=image_counter
+                    self.pycam.display.refresh()
+                    self.file_name.text=filename.split('/')[-1].split('.')[0]
+                    self.res_label.text=f'{h}x{w}'
                     #bitmaptools.rotozoom(bitmap,bitmap,scale=1.2)
                 self.pycam.blit(bitmap)
-                self.pycam.display.root_group = self.splash
+        self.file_name.text=f''
     def init_UI(self):
         self.last_frame = displayio.Bitmap(self.pycam.camera.width, self.pycam.camera.height, 65535)
         self.sd_label = label.Label(
@@ -99,7 +102,7 @@ class camera():
             terminalio.FONT, text="", x=0, y=20, scale=1
             )
         self.file_name=label.Label(
-            terminalio.FONT, text=f'', x=140, y=220, scale=1
+            terminalio.FONT, text=f'', x=10, y=220, scale=2
             )
         self.led_label=label.Label(
             terminalio.FONT, text=f'LED {self.pycam.led_level}', x=10, y=220, scale=1
@@ -122,6 +125,8 @@ class camera():
             self.batt_sum=0
             print(self.battery_label.text)
         self.batt_sum+=100-round(abs(41000-round(pin.value))/9000*100)
+        self.pycam.display.refresh()
+        #self.set_main_UI()
     def set_main_UI(self):
         if self.pycam.camera_gain==0:
             self.gain_label.text="Gain Auto"
@@ -156,9 +161,7 @@ class camera():
         self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
         while True:
             self.pycam.keys_debounce()
-            self.set_main_UI()
             self.batt_check()
-            self.pycam.display.refresh()
             self.pycam.blit(self.pycam.continuous_capture())
             #print(f'{self.pycam.camera.gain_ctrl=}\n{self.pycam.camera.agc_gain=}\n{self.pycam.camera.aec_value=}')
             if self.pycam.shutter.long_press:
@@ -191,23 +194,32 @@ class camera():
                 self.pycam.camera.aec_value=830
             if self.pycam.select.fell:
                 self.preview(bitmap)
+                self.pycam.display.refresh()
                 self.set_main_UI()
                 self.pycam.live_preview_mode()
             if self.pycam.ok.fell:
                 self.pycam.led_level+=1
                 self.ok_flag=True
                 print(f'{self.pycam.led_level=}')
+                self.pycam.display.refresh()
+                self.set_main_UI()
             if self.pycam.ok.rose:
                 self.ok_flag=False
             if self.pycam.ok.current_duration>1 and self.ok_flag:
                 print(f'{self.pycam.ok.current_duration=}')
                 self.pycam.led_level=0
+                self.pycam.display.refresh()
+                self.set_main_UI()
             if self.pycam.up.fell:
                 self.pycam.camera_gain+=1
                 print(self.pycam.camera_gain)
+                self.pycam.display.refresh()
+                self.set_main_UI()
             if self.pycam.down.fell:
                 self.pycam.camera_gain-=1
                 print(self.pycam.camera_gain)
+                self.pycam.display.refresh()
+                self.set_main_UI()
             if self.pycam.left.fell:
                 self.pycam.live_preview_mode()
 if __name__=="__main__":
