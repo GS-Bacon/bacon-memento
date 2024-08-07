@@ -53,6 +53,7 @@ class camera():
         while True:
             self.pycam.keys_debounce()
             self.batt_check()
+            self.file_name.text=filename.split('/')[-1].split('.')[0]
             if self.pycam.select.fell:
                 self.pycam.live_preview_mode()
                 self.pycam.init_display()
@@ -86,6 +87,38 @@ class camera():
                     self.res_label.text=f'{h}x{w}'
                     #bitmaptools.rotozoom(bitmap,bitmap,scale=1.2)
                 self.pycam.blit(bitmap)
+                if self.pycam.ok.fell:
+                    print("remove check")
+                    self.file_name.text=""
+                    del_label=label.Label(terminalio.FONT, text=f'{filename.split('/')[-1].split('.')[0]} remove?', x=0, y=120, scale=2)
+                    ok_label=label.Label(terminalio.FONT, text=f'OK', x=10, y=220, scale=2)
+                    cancel_label=label.Label(terminalio.FONT, text=f'Cancel', x=160, y=220, scale=2)
+                    self.pycam.splash.append(del_label)
+                    self.pycam.splash.append(ok_label)
+                    self.pycam.splash.append(cancel_label)
+                    self.pycam.display.refresh()
+                    while True:
+                        self.pycam.keys_debounce()
+                        if self.pycam.ok.fell:
+                            os.remove(filename)
+                            self.pycam.splash[-1].text='removed!!'
+                            self.pycam.display.refresh()
+                            self.pycam.splash.pop()
+                            self.pycam.splash.pop()
+                            self.pycam.splash.pop()
+                            all_images = [
+                                f"/sd/{filename}"
+                                for filename in os.listdir("/sd")
+                                if filename.lower().endswith(".jpg")
+                                ]
+                            all_images.sort()
+                            image_counter-=1
+                            break
+                        if self.pycam.select.fell:
+                            break
+                    del_label.text=''
+                    ok_label.text=''
+                    cancel_label.text=''
         self.file_name.text=f''
     def init_UI(self):
         self.last_frame = displayio.Bitmap(self.pycam.camera.width, self.pycam.camera.height, 65535)
@@ -144,9 +177,9 @@ class camera():
         self.init_UI()
         self.set_main_UI()
         self.pycam.init_display()
-        self.pycam.camera.gain_ctrl=False
+        self.pycam.camera.gain_ctrl=True
         self.pycam.camera.exposure_ctrl=False
-        self.pycam.camera.agc_gain=5
+        self.pycam.camera.agc_gain=0
         self.pycam.camera.aec_value=830
         self.pycam.camera.brightness=0
         self.pycam.camera.bpc=False
