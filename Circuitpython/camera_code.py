@@ -10,7 +10,7 @@ import board
 from jpegio import JpegDecoder
 decoder = JpegDecoder()
 import bitmaptools
-
+import qrio
 import espcamera
 
 bitmap = displayio.Bitmap(240, 176, 65535)
@@ -35,6 +35,26 @@ class camera():
         self.loop_counter=0
         self.batt_sum:float=0.0
         self.ok_flag:bool=False
+    def read_qr(self):
+        qrdecoder = qrio.QRDecoder(self.pycam.camera.width, self.pycam.camera.height)
+        self.pycam.camera.special_effect=2
+        while True:
+            bitmaps=self.pycam.continuous_capture()
+            self.pycam.blit(bitmaps)
+            self.pycam.keys_debounce()
+            self.batt_check()
+            if self.pycam.ok.fell:
+                self.pycam.camera.special_effect=0
+                return
+            for row in qrdecoder.decode(bitmaps, qrio.PixelPolicy.EVEN_BYTES):
+                payload = row.payload
+                try:
+                    payload = payload.decode("utf-8")
+                    print(payload)
+                    self.pycam.camera.special_effect=0
+                    return
+                except UnicodeError:
+                    pass
     def preview(self,bitmap):
         #self.pycam.display.refresh()
         print("go preview")
@@ -231,11 +251,13 @@ class camera():
                 self.set_main_UI()
                 self.pycam.live_preview_mode()
             if self.pycam.ok.fell:
-                self.pycam.led_level+=1
-                self.ok_flag=True
-                print(f'{self.pycam.led_level=}')
-                self.pycam.display.refresh()
-                self.set_main_UI()
+                self.read_qr()
+                self.pycam.live_preview_mode()
+                #self.pycam.led_level+=1
+                #self.ok_flag=True
+                #print(f'{self.pycam.led_level=}')
+                #self.pycam.display.refresh()
+                #self.set_main_UI()
             if self.pycam.ok.rose:
                 self.ok_flag=False
             if self.pycam.ok.current_duration>1 and self.ok_flag:
