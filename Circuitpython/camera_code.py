@@ -36,13 +36,17 @@ class camera():
         self.batt_sum:float=0.0
         self.ok_flag:bool=False
     def read_qr(self):
+        print('QR MODE')
         qrdecoder = qrio.QRDecoder(self.pycam.camera.width, self.pycam.camera.height)
-        self.pycam.camera.special_effect=2
         while True:
             bitmaps=self.pycam.continuous_capture()
             self.pycam.blit(bitmaps)
             self.pycam.keys_debounce()
             self.batt_check()
+            if self.pycam.shutter.long_press:
+                print("FOCUS")
+                print(self.pycam.autofocus_status)
+                self.pycam.autofocus()
             if self.pycam.ok.fell:
                 self.pycam.camera.special_effect=0
                 return
