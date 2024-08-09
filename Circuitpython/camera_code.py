@@ -35,6 +35,7 @@ class camera():
         self.loop_counter=0
         self.batt_sum:float=0.0
         self.ok_flag:bool=False
+        self.select_flag:bool=False
     def read_qr(self):
         print('QR MODE')
         qrdecoder = qrio.QRDecoder(self.pycam.camera.width, self.pycam.camera.height)
@@ -55,7 +56,7 @@ class camera():
                 try:
                     payload = payload.decode("utf-8")
                     print(payload)
-                    self.pycam.camera.special_effect=0
+                    self.pycam.display_message(f'{payload}',scale=1,color=0x0000FF)
                     return
                 except UnicodeError:
                     pass
@@ -211,7 +212,6 @@ class camera():
         self.pycam.camera.quality=6
         self.pycam.camera.bpc=False
         self.pycam.camera.wpc=False
-        
         self.pycam.camera.gain_ceiling=espcamera.GainCeiling.GAIN_2X
         pin=self.pycam.batt
         self.battery_p=100-round(abs(41000-round(pin.value))/9000*100)
@@ -248,20 +248,23 @@ class camera():
                     self.pycam.display_message("Error\nNo SD Card", color=0xFF0000)
                     time.sleep(0.5)
                 self.pycam.live_preview_mode()
-                self.pycam.camera.aec_value=830
+            if self.pycam.select.rose:
+                self.select_flag=False
+            if self.pycam.select.current_duration>1 and self.select_flag:
+                self.read_qr()
+                self.pycam.live_preview_mode()
             if self.pycam.select.fell:
+                self.select_flag=True
                 self.preview(bitmap)
                 self.pycam.display.refresh()
                 self.set_main_UI()
                 self.pycam.live_preview_mode()
             if self.pycam.ok.fell:
-                self.read_qr()
-                self.pycam.live_preview_mode()
-                #self.pycam.led_level+=1
-                #self.ok_flag=True
-                #print(f'{self.pycam.led_level=}')
-                #self.pycam.display.refresh()
-                #self.set_main_UI()
+                self.pycam.led_level+=1
+                self.ok_flag=True
+                print(f'{self.pycam.led_level=}')
+                self.pycam.display.refresh()
+                self.set_main_UI()
             if self.pycam.ok.rose:
                 self.ok_flag=False
             if self.pycam.ok.current_duration>1 and self.ok_flag:
