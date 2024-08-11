@@ -247,8 +247,9 @@ class camera():
             if self.pycam.select.rose:
                 self.select_flag=False
             if self.pycam.select.current_duration>1 and self.select_flag:
-                self.read_qr()
-                self.pycam.live_preview_mode()
+                pass
+                #self.read_qr()
+                #self.pycam.live_preview_mode()
             if self.pycam.select.fell:
                 self.select_flag=True
                 self.preview(bitmap)
