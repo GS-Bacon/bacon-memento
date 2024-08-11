@@ -356,10 +356,10 @@ See Learn Guide."""
         self.led_level = 0
         self.camera_gain= 0
         #self.effect = microcontroller.nvm[_NVM_EFFECT]
-        self.camera.saturation = 4
-        self.camera.quality=12
-        self.camera.gain_ctrl=True
-        self.camera.bpc=True
+        self.camera.saturation = 3
+        #self.camera.quality=12
+        #self.camera.gain_ctrl=True
+        #self.camera.bpc=True
         #self.camera.dcw=True
         self.resolution = microcontroller.nvm[_NVM_RESOLUTION]
         #self.mode = microcontroller.nvm[_NVM_MODE]

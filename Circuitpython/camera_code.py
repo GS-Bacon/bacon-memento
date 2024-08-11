@@ -1,15 +1,11 @@
 import time
-
 import displayio
 import bacon_pycamera
 import os
 import terminalio
 from adafruit_display_text import label
-from analogio import AnalogIn
-import board
 from jpegio import JpegDecoder
 decoder = JpegDecoder()
-import bitmaptools
 import qrio
 import espcamera
 
