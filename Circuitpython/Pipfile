@@ -12,3 +12,7 @@ black = "*"
 
 [requires]
 python_version = "3.12"
+
+[scripts]
+black = "python -m black ."
+isort = "python -m isort ."
