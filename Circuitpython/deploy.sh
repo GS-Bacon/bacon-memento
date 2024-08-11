@@ -42,4 +42,4 @@ cp -r "${ADAFRUIT_LIB_BUNDLE_PATH}"/lib/adafruit_ov5640 "${LIBDST}"
 cp -r ./lib/* "${LIBDST}"
 
 # メインコードをコピー
-cp -r ./camera_code.py "${DST}"/code.py
+cp -r ./main.py "${DST}"/main.py
