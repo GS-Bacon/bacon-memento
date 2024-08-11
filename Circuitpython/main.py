@@ -8,7 +8,7 @@ import qrio
 import terminalio
 from adafruit_display_text import label
 from jpegio import JpegDecoder
-import re
+import wifi
 
 decoder = JpegDecoder()
 bitmap = displayio.Bitmap(240, 176, 65535)
@@ -60,7 +60,7 @@ class camera:
                 elif key == 'H':
                     result['hidden'] = value.upper() == 'TRUE'
         # 全ての必要な項目が含まれているか確認
-        if all(key in result for key in ['ssid', 'security_type', 'password', 'hidden']):
+        if all(key in result for key in ['ssid','password']):
             return result
         else:
             return None
@@ -83,12 +83,16 @@ class camera:
                 payload = row.payload
                 try:
                     payload = payload.decode("utf-8")
-                    wifi_conf=self.parse_wifi_config(payload)
+                    #print(str(payload))
+                    wifi_conf=self.parse_wifi_config(str(payload))
+                    print(wifi_conf)
                     if isinstance(wifi_conf,dict):
                         print(wifi_conf['ssid'])
-                    self.pycam.display_message(f"{payload}", scale=1, color=0x0000FF)
-                    print('back QR mode')
-                    return
+                        wifi.radio.connect(ssid=wifi_conf['ssid'],password=wifi_conf['password'])
+                        print(wifi.radio.ipv4_address)
+                        self.pycam.display_message(f"connect!!",color=0x0000FF)
+                        print('back QR mode')
+                        return
                 except UnicodeError:
                     pass
 
@@ -264,10 +268,12 @@ class camera:
         self.pycam.init_display()
         self.pycam.camera.gain_ctrl = True
         self.pycam.camera.exposure_ctrl = True
+        self.pycam.camera.aec2 = True
         self.pycam.camera.awb_gain=True
-        self.pycam.camera.agc_gain = 20
+        #self.pycam.camera.agc_gain = 20
         self.pycam.camera.aec_value = 830
-        self.pycam.camera.brightness = 0
+        self.pycam.camera.ae_level = 2
+        self.pycam.camera.brightness = 6
         self.pycam.camera.bpc = False
         self.pycam.camera.denoise = 6
         self.pycam.camera.quality = 6
