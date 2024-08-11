@@ -3,22 +3,21 @@ import os
 import struct
 import time
 
-#import dataclasses
+# import dataclasses
 
 try:
     from typing import Sequence
 except ImportError:
     pass
 
-from analogio import AnalogIn
 import adafruit_aw9523
 import adafruit_lis3dh
 import bitmaptools
 import board
-import displayio
-import fourwire
 import busdisplay
+import displayio
 import espcamera
+import fourwire
 import microcontroller
 import neopixel
 import pwmio
@@ -28,6 +27,7 @@ import terminalio
 from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_debouncer import Button, Debouncer
 from adafruit_display_text import label
+from analogio import AnalogIn
 from digitalio import DigitalInOut, Pull
 from rainbowio import colorwheel
 
@@ -35,6 +35,7 @@ __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_PyCamera.git"
 
 from micropython import const
+
 _REG_DLY = const(0xFFFF)
 
 _OV5640_STAT_FIRMWAREBAD = const(0x7F)
@@ -74,6 +75,7 @@ _NVM_MODE = const(3)
 _NVM_TIMELAPSE_RATE = const(4)
 _NVM_TIMELAPSE_SUBMODE = const(5)
 
+
 class BaconPyCameraBase:
     _finalize_firmware_load = (
         0x3022,
@@ -97,15 +99,15 @@ class BaconPyCameraBase:
     )
 
     led_levels = [0.0, 0.1, 0.2, 0.5, 1.0]
-    #camera_gains=[
+    # camera_gains=[
     #    espcamera.GainCeiling.GAIN_2X,
     #    espcamera.GainCeiling.GAIN_4X,
     #    espcamera.GainCeiling.GAIN_8X,
     #    espcamera.GainCeiling.GAIN_32X,
     #    espcamera.GainCeiling.GAIN_64X,
     #    espcamera.GainCeiling.GAIN_128X
-    #]
-    camera_gains=[0,5,10,15,20,25,30]
+    # ]
+    camera_gains = [0, 5, 10, 15, 20, 25, 30]
 
     colors = [
         0xFFFFFF,
@@ -172,11 +174,12 @@ class BaconPyCameraBase:
         # "1080x1920",
         "2560x1920",
     )
+
     def __init__(self) -> None:
         displayio.release_displays()
         self._i2c = board.I2C()
         self._spi = board.SPI()
-        self.batt=AnalogIn(board.BATTERY_MONITOR)
+        self.batt = AnalogIn(board.BATTERY_MONITOR)
         self._timestamp = time.monotonic()
         self._bigbuf = None
         self._botbar = None
@@ -207,16 +210,16 @@ class BaconPyCameraBase:
         self.preview_scale = None
         self.overlay_position = [None, None]
         self.overlay_scale = 1.0
-        #UI用のラベル
+        # UI用のラベル
         self.splash = displayio.Group()
-        self.cam_status=CameraStatus()
-        self.res=None
+        self.cam_status = CameraStatus()
+        self.res = None
 
         self.shutter_button = DigitalInOut(board.BUTTON)
         self.shutter_button.switch_to_input(Pull.UP)
         self.shutter = Button(self.shutter_button)
 
-        #カメラの初期化用
+        # カメラの初期化用
         self._cam_reset = DigitalInOut(board.CAMERA_RESET)
         self._cam_pwdn = DigitalInOut(board.CAMERA_PWDN)
 
@@ -281,6 +284,7 @@ See Learn Guide."""
         # lis3dh accelerometer
         self.accel = adafruit_lis3dh.LIS3DH_I2C(self._i2c, address=0x19)
         self.accel.range = adafruit_lis3dh.RANGE_2_G
+
     def init_neopixel(self):
         """Initialize the neopixels (onboard & ring)"""
         # main board neopixel
@@ -293,6 +297,7 @@ See Learn Guide."""
             board.A1, 8, brightness=0.1, pixel_order=neopixel.RGBW
         )
         self.pixels.fill(0)
+
     def init_display(self):
         """Initialize the TFT display"""
         # construct displayio by hand
@@ -316,6 +321,7 @@ See Learn Guide."""
         )
         self.display.root_group = self.splash
         self.display.refresh()
+
     def init_camera(self, init_autofocus=True) -> None:
         self._cam_reset.switch_to_output(False)
         self._cam_pwdn.switch_to_output(True)
@@ -362,20 +368,23 @@ See Learn Guide."""
         #self.camera.bpc=True
         #self.camera.dcw=True
         self.resolution = microcontroller.nvm[_NVM_RESOLUTION]
-        #self.mode = microcontroller.nvm[_NVM_MODE]
+        # self.mode = microcontroller.nvm[_NVM_MODE]
         if init_autofocus:
             self.autofocus_init()
+
     def deinit_display(self):
         """Release the TFT display"""
         # construct displayio by hand
         displayio.release_displays()
         self._display_bus = None
         self.display = None
+
     def autofocus_init_from_file(self, filename):
         """Initialize the autofocus engine from a .bin file"""
         with open(filename, mode="rb") as file:
             firmware = file.read()
         self.autofocus_init_from_bitstream(firmware)
+
     def autofocus_init_from_bitstream(self, firmware: bytes):
         """Initialize the autofocus engine from a bytestring"""
         if self.camera.sensor_name != "OV5640":
@@ -405,13 +414,12 @@ See Learn Guide."""
     def autofocus_init(self):
         """Initialize the autofocus engine from ov5640_autofocus.bin"""
         if "/" in __file__:
-            binfile = (
-                "/lib/adafruit_ov5640/ov5640_autofocus.bin"
-            )
+            binfile = "/lib/adafruit_ov5640/ov5640_autofocus.bin"
         else:
             binfile = "ov5640_autofocus.bin"
         print(binfile)
         return self.autofocus_init_from_file(binfile)
+
     def write_camera_register(self, reg: int, value: int) -> None:
         """Write a 1-byte camera register"""
         b = bytearray(3)
@@ -420,6 +428,7 @@ See Learn Guide."""
         b[2] = value
         with self._camera_device as i2c:
             i2c.write(b)
+
     def write_camera_list(self, reg_list: Sequence[int]) -> None:
         """Write a series of 1-byte camera registers"""
         for i in range(0, len(reg_list), 2):
@@ -429,6 +438,7 @@ See Learn Guide."""
                 time.sleep(value / 1000)
             else:
                 self.write_camera_register(register, value)
+
     def read_camera_register(self, reg: int) -> int:
         """Read a 1-byte camera register"""
         b = bytearray(2)
@@ -452,6 +462,7 @@ See Learn Guide."""
                 return True
             time.sleep(0.01)
         return False
+
     def autofocus(self) -> list[int]:
         """Perform an autofocus operation.
 
@@ -468,6 +479,7 @@ See Learn Guide."""
         ]
         print(f"zones focused: {zone_focus}")
         return zone_focus
+
     @property
     def autofocus_vcm_step(self):
         """Get the voice coil motor step location"""
@@ -476,6 +488,7 @@ See Learn Guide."""
         ):
             return None
         return self.read_camera_register(_OV5640_CMD_PARA4)
+
     @autofocus_vcm_step.setter
     def autofocus_vcm_step(self, step):
         """Get the voice coil motor step location, from 0 to 255"""
@@ -491,6 +504,7 @@ See Learn Guide."""
 
         The resolution can also be set as a string such as "240x240"."""
         return self._resolution
+
     @resolution.setter
     def resolution(self, res):
         if isinstance(res, str):
@@ -510,16 +524,17 @@ See Learn Guide."""
     def camera_gain(self):
         """Get or set the Camera Gain,from 0to5"""
         return self._camera_gain
+
     @camera_gain.setter
-    def  camera_gain(self,new_gain):
-        level=(new_gain+len(self.camera_gains))%len(self.camera_gains)
-        if level==0:
-            self.camera.gain_ctrl=True
-            self._camera_gain=level
+    def camera_gain(self, new_gain):
+        level = (new_gain + len(self.camera_gains)) % len(self.camera_gains)
+        if level == 0:
+            self.camera.gain_ctrl = True
+            self._camera_gain = level
         else:
-            self.camera.gain_ctrl=False
-            self._camera_gain=level
-            self.camera.agc_gain=self.camera_gains[level]
+            self.camera.gain_ctrl = False
+            self._camera_gain = level
+            self.camera.agc_gain = self.camera_gains[level]
 
     @property
     def led_level(self):
@@ -548,6 +563,7 @@ See Learn Guide."""
             self.pixels.fill(colors)
         else:
             self.pixels[:] = colors
+
     def display_message(self, message, color=0xFF0000, scale=2, full_screen=False):
         """Display a message on the TFT"""
         text_area = label.Label(terminalio.FONT, text=message, color=color, scale=scale)
@@ -566,9 +582,10 @@ See Learn Guide."""
     def mount_sd_card(self):
         """Attempt to mount the SD card"""
         if not self.card_detect.value:
-            self.cam_status.SDExist=False
+            self.cam_status.SDExist = False
             raise RuntimeError("No SD card inserted")
-        else:self.cam_status.SDExist=True
+        else:
+            self.cam_status.SDExist = True
 
         if self.sdcard:
             self.sdcard.deinit()
@@ -603,7 +620,7 @@ See Learn Guide."""
             vfs = storage.VfsFat(self.sdcard)
             storage.mount(vfs, "/sd")
             self._image_counter = 0
-            self.cam_status.SDMount=True
+            self.cam_status.SDMount = True
             print("SD mounted")
         finally:
             if had_display:
@@ -615,8 +632,8 @@ See Learn Guide."""
             storage.umount("/sd")
         except OSError:
             pass
-        self.cam_status.SDExist=False
-        self.cam_status.SDMount=False
+        self.cam_status.SDExist = False
+        self.cam_status.SDMount = False
 
     def keys_debounce(self):
         """Debounce all keys.
@@ -642,6 +659,7 @@ See Learn Guide."""
             pwm.duty_cycle = 0x8000
             time.sleep(duration)
             self.mute.value = False
+
     def open_next_image(self, extension="jpg"):
         """Return an opened numbered file on the sdcard, such as "img01234.jpg"."""
         try:
@@ -659,7 +677,7 @@ See Learn Guide."""
         print("Writing to", filename)
         return open(filename, "wb")
 
-    def capture_jpeg(self)->bool:
+    def capture_jpeg(self) -> bool:
         """Capture a jpeg file and save it to the SD card"""
         try:
             os.stat("/sd")
@@ -687,15 +705,18 @@ See Learn Guide."""
         else:
             print("# frame capture failed")
             return False
+
     def continuous_capture(self):
         """Capture an image into an internal buffer.
 
         The image is valid at least until the next image capture,
         or the camera's capture mode is changed"""
         return self.camera.take(1)
+
     def capture_into_bitmap(self, bitmap):
         """Capture an image and blit it into the given bitmap"""
         bitmaptools.blit(bitmap, self.continuous_capture(), 0, 0)
+
     def blit(self, bitmap, x_offset=0, y_offset=32):
         """Display a bitmap direct to the LCD, bypassing displayio
 
@@ -720,12 +741,16 @@ See Learn Guide."""
                 self.overlay_bmp,
                 scale=self.preview_scale * self.overlay_scale,
                 skip_index=self.overlay_transparency_color,
-                ox=int(self.overlay_position[0] * self.preview_scale)
-                if self.overlay_position[0] is not None
-                else None,
-                oy=int(self.overlay_position[1] * self.preview_scale)
-                if self.overlay_position[1] is not None
-                else None,
+                ox=(
+                    int(self.overlay_position[0] * self.preview_scale)
+                    if self.overlay_position[0] is not None
+                    else None
+                ),
+                oy=(
+                    int(self.overlay_position[1] * self.preview_scale)
+                    if self.overlay_position[1] is not None
+                    else None
+                ),
                 px=0 if self.overlay_position[0] is not None else None,
                 py=0 if self.overlay_position[1] is not None else None,
             )
@@ -738,6 +763,7 @@ See Learn Guide."""
             43, struct.pack(">hh", y_offset, y_offset + bitmap.height - 1)
         )
         self._display_bus.send(44, bitmap)
+
     def live_preview_mode(self):
         """Set the camera into live preview mode"""
         self.camera.reconfigure(
@@ -746,18 +772,20 @@ See Learn Guide."""
         )
         # self.effect = self._effect
         self.continuous_capture_start()
+
     def continuous_capture_start(self):
         """Switch the camera to continuous-capture mode"""
         pass  # pylint: disable=unnecessary-pass
 
 
 class CameraStatus:
-    """a
-    """
-    SDMount:bool=False
-    SDExist:bool=False
-    res:str=""
-    led_level:int=0
+    """a"""
+
+    SDMount: bool = False
+    SDExist: bool = False
+    res: str = ""
+    led_level: int = 0
+
 
 class BaconPyCamera(BaconPyCameraBase):
     def __init__(self, init_autofocus=True):
@@ -773,8 +801,10 @@ class BaconPyCamera(BaconPyCameraBase):
         except Exception as exc:  # pylint: disable=broad-exception-caught
             # No SD card inserted, it's OK
             print(exc)
-if __name__=="__main__":
-    BPCB=BaconPyCameraBase()
+
+
+if __name__ == "__main__":
+    BPCB = BaconPyCameraBase()
     BPCB.init_accelerometer()
     BPCB.init_neopixel()
     BPCB.init_display()
