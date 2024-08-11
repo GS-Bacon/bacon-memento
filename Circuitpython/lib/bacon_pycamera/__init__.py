@@ -99,14 +99,15 @@ class BaconPyCameraBase:
     )
 
     led_levels = [0.0, 0.1, 0.2, 0.5, 1.0]
-    # camera_gains=[
-    #    espcamera.GainCeiling.GAIN_2X,
-    #    espcamera.GainCeiling.GAIN_4X,
-    #    espcamera.GainCeiling.GAIN_8X,
-    #    espcamera.GainCeiling.GAIN_32X,
-    #    espcamera.GainCeiling.GAIN_64X,
-    #    espcamera.GainCeiling.GAIN_128X
-    # ]
+    camera_gain_ceilings=[
+        None,
+        espcamera.GainCeiling.GAIN_2X,
+        espcamera.GainCeiling.GAIN_4X,
+        espcamera.GainCeiling.GAIN_8X,
+        espcamera.GainCeiling.GAIN_32X,
+        espcamera.GainCeiling.GAIN_64X,
+        espcamera.GainCeiling.GAIN_128X,
+        ]
     camera_gains = [0, 5, 10, 15, 20, 25, 30]
 
     colors = [
@@ -361,6 +362,7 @@ See Learn Guide."""
         self.led_color = 0
         self.led_level = 0
         self.camera_gain = 0
+        self.camera_gain_ceiling=0
         # self.effect = microcontroller.nvm[_NVM_EFFECT]
         self.camera.saturation = 3
         # self.camera.quality=12
@@ -535,7 +537,19 @@ See Learn Guide."""
             self.camera.gain_ctrl = False
             self._camera_gain = level
             self.camera.agc_gain = self.camera_gains[level]
+    @property
+    def camera_gain_ceiling(self):
+        """Get or set the Camera Gain,from 0to5"""
+        return self._camera_gain_ceiling
 
+    @camera_gain_ceiling.setter
+    def camera_gain_ceiling(self, new_ceiling):
+        level = (new_ceiling + len(self.camera_gain_ceilings)) % len(self.camera_gain_ceilings)
+        if isinstance(self.camera_gain_ceilings[level],espcamera.GainCeiling):
+            self._camera_gain_ceiling = level
+            self.camera.gain_ceiling = self.camera_gain_ceilings[level]
+        else:
+            self._camera_gain_ceiling = level
     @property
     def led_level(self):
         """Get or set the LED level, from 0 to 4"""
@@ -558,7 +572,6 @@ See Learn Guide."""
         color = (new_color + len(self.colors)) % len(self.colors)
         self._led_color = color
         colors = self.colors[color]
-        print("colors", colors)
         if isinstance(colors, int):
             self.pixels.fill(colors)
         else:

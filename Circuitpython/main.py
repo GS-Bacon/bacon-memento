@@ -8,6 +8,7 @@ import qrio
 import terminalio
 from adafruit_display_text import label
 from jpegio import JpegDecoder
+import re
 
 decoder = JpegDecoder()
 bitmap = displayio.Bitmap(240, 176, 65535)
@@ -37,7 +38,32 @@ class camera:
         self.batt_sum: float = 0.0
         self.ok_flag: bool = False
         self.select_flag: bool = False
-
+    def parse_wifi_config(self,config_string)->dict|None:
+        if config_string.startswith("WIFI:"):
+            config_string = config_string[5:]
+        # 末尾の ";;" を削除
+        if config_string.endswith(";;"):
+            config_string = config_string[:-2]
+        # 各項目をセミコロンで分割
+        items = config_string.split(';')
+        # 結果を格納する辞書
+        result = {}
+        for item in items:
+            if ':' in item:
+                key, value = item.split(':', 1)
+                if key == 'S':
+                    result['ssid'] = value
+                elif key == 'T':
+                    result['security_type'] = value
+                elif key == 'P':
+                    result['password'] = value
+                elif key == 'H':
+                    result['hidden'] = value.upper() == 'TRUE'
+        # 全ての必要な項目が含まれているか確認
+        if all(key in result for key in ['ssid', 'security_type', 'password', 'hidden']):
+            return result
+        else:
+            return None
     def read_qr(self):
         print("QR MODE")
         qrdecoder = qrio.QRDecoder(self.pycam.camera.width, self.pycam.camera.height)
@@ -50,15 +76,18 @@ class camera:
                 print("FOCUS")
                 print(self.pycam.autofocus_status)
                 self.pycam.autofocus()
-            if self.pycam.ok.fell:
-                self.pycam.camera.special_effect = 0
+            if self.pycam.select.fell:
+                print('back QR mode')
                 return
             for row in qrdecoder.decode(bitmaps, qrio.PixelPolicy.EVEN_BYTES):
                 payload = row.payload
                 try:
                     payload = payload.decode("utf-8")
-                    print(payload)
+                    wifi_conf=self.parse_wifi_config(payload)
+                    if isinstance(wifi_conf,dict):
+                        print(wifi_conf['ssid'])
                     self.pycam.display_message(f"{payload}", scale=1, color=0x0000FF)
+                    print('back QR mode')
                     return
                 except UnicodeError:
                     pass
@@ -187,7 +216,7 @@ class camera:
         )
         self.gain_label = label.Label(
             terminalio.FONT,
-            text="Gain {: >4}".format(self.pycam.camera_gain),
+            text="Gain {: >4}".format(self.pycam.camera_gain_ceiling),
             x=180,
             y=220,
             scale=1,
@@ -206,32 +235,37 @@ class camera:
             self.battery_p = round(self.batt_sum / 60.0)
             self.battery_label.text = "Battery {: >3}%".format(self.battery_p)
             self.batt_sum = 0
-            print(self.battery_label.text)
+            #print(self.battery_label.text)
         self.batt_sum += 100 - round(abs(41000 - round(pin.value)) / 9000 * 100)
         self.pycam.display.refresh()
         # self.set_main_UI()
 
     def set_main_UI(self):
-        if self.pycam.camera_gain == 0:
+        if self.pycam.camera_gain_ceiling== 0:
             self.gain_label.text = "Gain Auto"
         else:
-            self.gain_label.text = "Gain {: >4}".format(self.pycam.camera_gain)
+            self.gain_label.text = "Gain {: >4}".format(self.pycam.camera_gain_ceiling)
         self.pycam.display.refresh()
         self.led_label.text = f"LED {self.pycam.led_level}"
         self.sd_label.text = "SD Card {: >3}%".format(self.sd_p)
         self.res_label.text = self.pycam.cam_status.res
-        if self.pycam.camera_gain == 0:
-            self.gain_label.text = "Gain Auto"
-        else:
-            self.gain_label.text = "Gain {: >4}".format(self.pycam.camera_gain)
+    def get_camera_status(self):
+        #print(dir(self.pycam.camera.bpc.__class__.__dict__))
+        for t in dir(self.pycam.camera):
+            if type(eval('espcamera.Camera.'+t))==property:
+                v=getattr(self.pycam.camera,t)
+                print(f'{t}:{v}')
+        print('---------------------------------')
+        #        print(t)
 
     def main_roop(self):
         self.init_UI()
         self.set_main_UI()
         self.pycam.init_display()
         self.pycam.camera.gain_ctrl = True
-        self.pycam.camera.exposure_ctrl = False
-        self.pycam.camera.agc_gain = 0
+        self.pycam.camera.exposure_ctrl = True
+        self.pycam.camera.awb_gain=True
+        self.pycam.camera.agc_gain = 20
         self.pycam.camera.aec_value = 830
         self.pycam.camera.brightness = 0
         self.pycam.camera.bpc = False
@@ -239,7 +273,10 @@ class camera:
         self.pycam.camera.quality = 6
         self.pycam.camera.bpc = False
         self.pycam.camera.wpc = False
-        self.pycam.camera.gain_ceiling = espcamera.GainCeiling.GAIN_2X
+        self.pycam.frame_available=False
+        self.pycam.framebuffer_count=1
+        self.get_camera_status()
+        #self.pycam.camera.gain_ceiling = espcamera.GainCeiling.GAIN_0X
         pin = self.pycam.batt
         self.battery_p = 100 - round(abs(41000 - round(pin.value)) / 9000 * 100)
         self.battery_label.text = "Battery {: >3}%".format(self.battery_p)
@@ -259,6 +296,7 @@ class camera:
                 print("Shutter released")
                 self.pycam.capture_into_bitmap(self.last_frame)
                 # pycam.stop_motion_frame += 1
+                self.get_camera_status()
                 try:
                     self.pycam.display_message("Snap!", color=0x0000FF)
                     if self.pycam.capture_jpeg():
@@ -270,51 +308,56 @@ class camera:
                         # self.pycam.tone(100, 0.05)
                 except TypeError as e:
                     self.pycam.display_message("Failed", color=0xFF0000)
+                    print('type error')
                     time.sleep(0.5)
                 except RuntimeError as e:
                     self.pycam.display_message("Error\nNo SD Card", color=0xFF0000)
                     time.sleep(0.5)
                 self.pycam.live_preview_mode()
-            if self.pycam.select.rose:
-                self.select_flag = False
-            if self.pycam.select.current_duration > 1 and self.select_flag:
-                print("select long press")
-                pass
-                # self.read_qr()
-                # self.pycam.live_preview_mode()
-            if self.pycam.select.fell and self.pycam.select.last_duration<=1:
-                print(f'{self.pycam.select.last_duration=}')
-                self.select_flag = True
-                self.preview(bitmap)
-                self.pycam.display.refresh()
-                self.set_main_UI()
-                self.pycam.live_preview_mode()
+            if self.pycam.select.fell:
+                while True:
+                    self.pycam.keys_debounce()
+                    self.batt_check()
+                    self.pycam.blit(self.pycam.continuous_capture())
+                    if self.pycam.select.current_duration > 1:
+                        print("select long press")
+                        self.read_qr()
+                        self.pycam.live_preview_mode()
+                        break
+                    if self.pycam.select.rose and self.pycam.select.last_duration<=1:
+                        print("short press")
+                        self.preview(bitmap)
+                        self.pycam.display.refresh()
+                        self.set_main_UI()
+                        self.pycam.live_preview_mode()
+                        break
             if self.pycam.ok.fell:
-                self.pycam.led_level += 1
-                self.ok_flag = True
-                print(f"{self.pycam.led_level=}")
-                self.pycam.display.refresh()
-                self.set_main_UI()
-            if self.pycam.ok.rose:
-                self.ok_flag = False
-            if self.pycam.ok.current_duration > 1 and self.ok_flag:
-                print(f"{self.pycam.ok.current_duration=}")
-                self.pycam.led_level = 0
-                self.pycam.display.refresh()
-                self.set_main_UI()
+                while True:
+                    self.pycam.keys_debounce()
+                    self.batt_check()
+                    self.pycam.blit(self.pycam.continuous_capture())
+                    if self.pycam.ok.current_duration > 1:
+                        self.pycam.led_level = 0
+                        self.pycam.display.refresh()
+                        self.set_main_UI()
+                        break
+                    if self.pycam.ok.rose and self.pycam.ok.last_duration<=1:
+                        self.pycam.led_level += 1
+                        #self.pycam.display.refresh()
+                        self.set_main_UI()
+                        break
             if self.pycam.up.fell:
-                self.pycam.camera_gain += 1
-                print(self.pycam.camera_gain)
+                self.pycam.camera_gain_ceiling += 1
+                print(self.pycam.camera_gain_ceiling)
                 self.pycam.display.refresh()
                 self.set_main_UI()
             if self.pycam.down.fell:
-                self.pycam.camera_gain -= 1
-                print(self.pycam.camera_gain)
+                self.pycam.camera_gain_ceiling -= 1
+                print(self.pycam.camera_gain_ceiling)
                 self.pycam.display.refresh()
                 self.set_main_UI()
             if self.pycam.left.fell:
                 self.pycam.live_preview_mode()
-
 
 if __name__ == "__main__":
     cameras = camera()
