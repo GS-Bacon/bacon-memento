@@ -1,0 +1,11 @@
+adafruit_aw9523==1.1.9
+adafruit_lis3dh==5.2.2
+adafruit_pixelbuf==2.0.4
+neopixel==6.3.11
+adafruit_debouncer==2.0.8
+adafruit_ticks==1.0.13
+adafruit_bus_device==5.2.9
+adafruit_register==1.9.18
+adafruit_bitmap_font==2.1.2
+adafruit_display_text==3.1.2
+adafruit_ov5640==1.2.0
