@@ -9,7 +9,9 @@ import terminalio
 from adafruit_display_text import label
 from jpegio import JpegDecoder
 import wifi
-
+import adafruit_connection_manager
+import adafruit_ntp
+import rtc
 decoder = JpegDecoder()
 bitmap = displayio.Bitmap(240, 176, 65535)
 
@@ -38,6 +40,15 @@ class camera:
         self.batt_sum: float = 0.0
         self.ok_flag: bool = False
         self.select_flag: bool = False
+        self._wifi=None
+    def check_rtc(self):
+        if wifi.radio.connected:
+            pool = adafruit_connection_manager.get_radio_socketpool(wifi.radio)
+            ntp = adafruit_ntp.NTP(pool,server='ntp.nict.jp',tz_offset=0, cache_seconds=3600)
+            print(f'ntp:{ntp.datetime}')
+            self.pycam.rtc.datetime=ntp.datetime
+        else:
+            print('diconnect')
     def parse_wifi_config(self,config_string)->dict|None:
         if config_string.startswith("WIFI:"):
             config_string = config_string[5:]
@@ -84,13 +95,22 @@ class camera:
                 try:
                     payload = payload.decode("utf-8")
                     #print(str(payload))
-                    wifi_conf=self.parse_wifi_config(str(payload))
-                    print(wifi_conf)
-                    if isinstance(wifi_conf,dict):
-                        print(wifi_conf['ssid'])
-                        wifi.radio.connect(ssid=wifi_conf['ssid'],password=wifi_conf['password'])
-                        print(wifi.radio.ipv4_address)
-                        self.pycam.display_message(f"connect!!",color=0x0000FF)
+                    self._wifi=self.parse_wifi_config(str(payload))
+                    print(self._wifi)
+                    if isinstance(self._wifi,dict):
+                        print(self._wifi['ssid'])
+                        networks = []
+                        for network in wifi.radio.start_scanning_networks():
+                            networks.append(network)
+                        wifi.radio.stop_scanning_networks()
+                        networks = sorted(networks, key=lambda net: net.rssi, reverse=True)
+                        for n in networks:
+                            if self._wifi['ssid']==n.ssid:
+                                wifi.radio.connect(ssid=self._wifi['ssid'],password=self._wifi['password'])
+                                print(wifi.radio.ipv4_address)
+                                self.pycam.display_message(f"connect!!",color=0x0000FF)
+                                self.check_rtc()
+                                break
                         print('back QR mode')
                         return
                 except UnicodeError:
@@ -242,6 +262,7 @@ class camera:
             #print(self.battery_label.text)
         self.batt_sum += 100 - round(abs(41000 - round(pin.value)) / 9000 * 100)
         self.pycam.display.refresh()
+
         # self.set_main_UI()
 
     def set_main_UI(self):

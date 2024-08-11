@@ -9,7 +9,7 @@ try:
     from typing import Sequence
 except ImportError:
     pass
-
+import rtc
 import adafruit_aw9523
 import adafruit_lis3dh
 import bitmaptools
@@ -211,6 +211,7 @@ class BaconPyCameraBase:
         self.preview_scale = None
         self.overlay_position = [None, None]
         self.overlay_scale = 1.0
+        self.rtc=rtc.RTC()
         # UI用のラベル
         self.splash = displayio.Group()
         self.cam_status = CameraStatus()
@@ -680,7 +681,7 @@ See Learn Guide."""
         except OSError as exc:  # no SD card!
             raise RuntimeError("No SD card mounted") from exc
         while True:
-            filename = "/sd/img%04d.%s" % (self._image_counter, extension)
+            filename = "/sd/img%s.%s" % (str(time.mktime(self.rtc.datetime)), extension)
             self._image_counter += 1
             try:
                 os.stat(filename)
@@ -688,7 +689,7 @@ See Learn Guide."""
                 break
         self._last_saved_image_filename = filename
         print("Writing to", filename)
-        return open(filename, "wb")
+        return filename
 
     def capture_jpeg(self) -> bool:
         """Capture a jpeg file and save it to the SD card"""
@@ -707,12 +708,13 @@ See Learn Guide."""
         if jpeg is not None:
             print(f"Captured {len(jpeg)} bytes of jpeg data")
             print("Resolution %d x %d" % (self.camera.width, self.camera.height))
-
-            with self.open_next_image() as dest:
+            filename=self.open_next_image()
+            with open(filename, "wb") as dest:
                 chunksize = 16384
                 for offset in range(0, len(jpeg), chunksize):
                     dest.write(jpeg[offset : offset + chunksize])
                     print(end=".")
+                os.utime(filename,(time.mktime(self.rtc.datetime),time.mktime(self.rtc.datetime)))
             print("# Wrote image")
             return True
         else:
