@@ -44,7 +44,7 @@ class camera:
     def check_rtc(self):
         if wifi.radio.connected:
             pool = adafruit_connection_manager.get_radio_socketpool(wifi.radio)
-            ntp = adafruit_ntp.NTP(pool,server='ntp.nict.jp',tz_offset=0, cache_seconds=3600)
+            ntp = adafruit_ntp.NTP(pool,server='ntp.nict.jp',tz_offset=9, cache_seconds=3600)
             print(f'ntp:{ntp.datetime}')
             self.pycam.rtc.datetime=ntp.datetime
         else:
@@ -240,7 +240,7 @@ class camera:
         )
         self.gain_label = label.Label(
             terminalio.FONT,
-            text="Gain {: >4}".format(self.pycam.camera_gain_ceiling),
+            text="Gain {: >4}".format(self.pycam.camera_gain),
             x=180,
             y=220,
             scale=1,
@@ -266,10 +266,10 @@ class camera:
         # self.set_main_UI()
 
     def set_main_UI(self):
-        if self.pycam.camera_gain_ceiling== 0:
+        if self.pycam.camera_gain== 0:
             self.gain_label.text = "Gain Auto"
         else:
-            self.gain_label.text = "Gain {: >4}".format(self.pycam.camera_gain_ceiling)
+            self.gain_label.text = "Gain {: >4}".format(self.pycam.camera_gain)
         self.pycam.display.refresh()
         self.led_label.text = f"LED {self.pycam.led_level}"
         self.sd_label.text = "SD Card {: >3}%".format(self.sd_p)
@@ -303,10 +303,11 @@ class camera:
         self.pycam.frame_available=False
         self.pycam.framebuffer_count=1
         self.get_camera_status()
-        #self.pycam.camera.gain_ceiling = espcamera.GainCeiling.GAIN_0X
+        self.pycam.camera.gain_ceiling = espcamera.GainCeiling.GAIN_2X
         pin = self.pycam.batt
         self.battery_p = 100 - round(abs(41000 - round(pin.value)) / 9000 * 100)
         self.battery_label.text = "Battery {: >3}%".format(self.battery_p)
+        print(self.pycam.rtc.datetime)
         while True:
             self.pycam.keys_debounce()
             self.batt_check()
@@ -374,13 +375,13 @@ class camera:
                         self.set_main_UI()
                         break
             if self.pycam.up.fell:
-                self.pycam.camera_gain_ceiling += 1
-                print(self.pycam.camera_gain_ceiling)
+                self.pycam.camera_gain += 1
+                print(self.pycam.camera_gain)
                 self.pycam.display.refresh()
                 self.set_main_UI()
             if self.pycam.down.fell:
-                self.pycam.camera_gain_ceiling -= 1
-                print(self.pycam.camera_gain_ceiling)
+                self.pycam.camera_gain -= 1
+                print(self.pycam.camera_gain)
                 self.pycam.display.refresh()
                 self.set_main_UI()
             if self.pycam.left.fell:

@@ -681,7 +681,7 @@ See Learn Guide."""
         except OSError as exc:  # no SD card!
             raise RuntimeError("No SD card mounted") from exc
         while True:
-            filename = "/sd/img%s.%s" % (str(time.mktime(self.rtc.datetime)), extension)
+            filename = "/sd/img%05d.%s" % (self._image_counter, extension)
             self._image_counter += 1
             try:
                 os.stat(filename)
@@ -714,7 +714,6 @@ See Learn Guide."""
                 for offset in range(0, len(jpeg), chunksize):
                     dest.write(jpeg[offset : offset + chunksize])
                     print(end=".")
-                os.utime(filename,(time.mktime(self.rtc.datetime),time.mktime(self.rtc.datetime)))
             print("# Wrote image")
             return True
         else:
