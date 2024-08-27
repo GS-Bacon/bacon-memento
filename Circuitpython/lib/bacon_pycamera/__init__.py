@@ -108,7 +108,7 @@ class BaconPyCameraBase:
     #    espcamera.GainCeiling.GAIN_128X
     # ]
     camera_gains = [0, 5, 10, 15, 20, 25, 30]
-
+    brightness_levels=[-2,-1,0,1,2]
     colors = [
         0xFFFFFF,
         0xFF0000,
@@ -361,6 +361,7 @@ See Learn Guide."""
         self.led_color = 0
         self.led_level = 0
         self.camera_gain= 0
+        self.camera_brightness=0
         #self.effect = microcontroller.nvm[_NVM_EFFECT]
         self.camera.saturation = 3
         #self.camera.quality=12
@@ -519,6 +520,16 @@ See Learn Guide."""
             _width = int(self.resolutions[self.resolution].split("x")[0])
             self.preview_scale = 240 / _width
         self.display.refresh()
+
+    @property
+    def camera_brightness(self):
+        return self._camera_brightness
+    
+    @camera_brightness.setter
+    def camera_brightness(self,new_level):
+        level=(new_level+ len(self.brightness_levels)) % len(self.brightness_levels)
+        self._camera_brightness=level
+        self.camera.brightness=self.brightness_levels[level]
 
     @property
     def camera_gain(self):

@@ -28,6 +28,7 @@ class camera():
         self.focus_label=None
         self.file_name=None
         self.led_label=None
+        self.bright_label=None
         self.loop_counter=0
         self.batt_sum:float=0.0
         self.ok_flag:bool=False
@@ -164,12 +165,16 @@ class camera():
         self.gain_label=label.Label(
             terminalio.FONT, text='Gain {: >4}'.format(self.pycam.camera_gain), x=180, y=220, scale=1
             )
+        self.bright_label=label.Label(
+            terminalio.FONT, text='bright {: >4}'.format(self.pycam.camera_brightness), x=170, y=230, scale=1
+            )
         self.pycam.splash.append(self.sd_label)
         self.pycam.splash.append(self.battery_label)
         self.pycam.splash.append(self.res_label)
         self.pycam.splash.append(self.file_name)
         self.pycam.splash.append(self.led_label)
         self.pycam.splash.append(self.gain_label)
+        self.pycam.splash.append(self.bright_label)
     def batt_check(self):
         self.loop_counter=self.loop_counter+1
         pin=self.pycam.batt
@@ -194,21 +199,21 @@ class camera():
                 self.gain_label.text="Gain Auto"
         else:
             self.gain_label.text='Gain {: >4}'.format(self.pycam.camera_gain)
+        self.bright_label.text='bright {: >4}'.format(self.pycam.camera.brightness)
     def main_roop(self):
         self.init_UI()
         self.set_main_UI()
         self.pycam.init_display()
         self.pycam.camera.gain_ctrl=True
-        self.pycam.camera.exposure_ctrl=False
+        self.pycam.camera.exposure_ctrl=True
         self.pycam.camera.agc_gain=0
         self.pycam.camera.aec_value=830
-        self.pycam.camera.brightness=0
+        #self.pycam.camera.brightness=0
         self.pycam.camera.bpc=False
         self.pycam.camera.denoise=6
         self.pycam.camera.quality=6
-        self.pycam.camera.bpc=False
         self.pycam.camera.wpc=False
-        self.pycam.camera.gain_ceiling=espcamera.GainCeiling.GAIN_2X
+        #self.pycam.camera.gain_ceiling=espcamera.GainCeiling.GAIN_2X
         pin=self.pycam.batt
         self.battery_p=100-round(abs(41000-round(pin.value))/9000*100)
         self.battery_label.text='Battery {: >3}%'.format(self.battery_p)
@@ -280,7 +285,15 @@ class camera():
                 self.pycam.display.refresh()
                 self.set_main_UI()
             if self.pycam.left.fell:
-                self.pycam.live_preview_mode()
+                self.pycam.camera_brightness+=1
+                print(f'{self.pycam.camera.brightness=}')
+                self.pycam.display.refresh()
+                self.set_main_UI()
+            if self.pycam.right.fell:
+                self.pycam.camera_brightness-=1
+                print(f'{self.pycam.camera.brightness=}')
+                self.pycam.display.refresh()
+                self.set_main_UI()
 if __name__=="__main__":
     cameras=camera()
     cameras.main_roop()
